@@ -6,6 +6,8 @@ module.exports = (app, express) => {
 
     // GET 
     api.get('/policy/:policyid', database.getPolicy)
+    api.get('/user/:userid', database.getUserData)
+    api.get('/incident/:incidentid', database.getIncident)
 
     // POST
     api.post('/login', database.login)

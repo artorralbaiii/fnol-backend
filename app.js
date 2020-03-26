@@ -9,7 +9,7 @@ let mongoose = require('mongoose')
 
 // Mongo DB Connection 
 mongoose.connect('mongodb://admin:passw0rd@ds061681.mlab.com:61681/fnoldb',
-    { useMongoClient: true }, (err) => (err) ? console.log(err) : console.log('Connected to database...'))
+    {}, (err) => (err) ? console.log(err) : console.log('Connected to database...'))
 
 // express server
 let app = express()

@@ -18,6 +18,6 @@ var policySchema = new schema({
     itemInsured: { type: String },
     mortgagee: { type: String },
     incidents: [{ type: schema.Types.ObjectId, ref: 'Incident' }]
-}, { timestamps: true });
+}, { timestamps: true }, { usePushEach: true });
 
 module.exports = mongoose.model('Policy', policySchema);

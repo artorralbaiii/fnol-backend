@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app",
-    "start-dev": "nodemon app  --inspect"
+    "start": "node app"
   },
   "author": "andres.jr.r.torralba@accenture.com",
   "license": "ISC",
@@ -15,7 +14,7 @@
     "cfenv": "^1.2.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "mongoose": "^4.13.20"
+    "mongoose": "^5.9.6"
   },
   "devDependencies": {}
 }

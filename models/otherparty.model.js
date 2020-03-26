@@ -13,7 +13,7 @@ var otherPartySchema = new schema({
     driver: { type: String },
     license: { type: String },
     driverContact: { type: String },
-}, { timestamps: true });
+}, { timestamps: true }, { usePushEach: true });
 
 module.exports = mongoose.model('Other', otherPartySchema);
 
