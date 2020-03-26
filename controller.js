@@ -15,10 +15,15 @@ module.exports = () => {
         login: login,
         getIncident: getIncident,
         getPolicy: getPolicy,
-        getUserData: getUserData
+        getUserData: getUserData,
+        ping: ping
     }
 
     return ctrl
+
+    function ping(req, res) {
+        res.send('ok');
+    }
 
     function login(req, res) {
         let body = req.body

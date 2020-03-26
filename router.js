@@ -4,6 +4,9 @@ let database = require('./controller')();
 module.exports = (app, express) => {
     let api = express.Router()
 
+    // Health Check
+    api.get('/ping', database.ping)
+
     // GET 
     api.get('/policy/:policyid', database.getPolicy)
     api.get('/user/:userid', database.getUserData)
