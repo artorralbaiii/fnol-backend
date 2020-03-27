@@ -1,3 +1,8 @@
+const userFiles = './user_upload/'
+const fs = require('fs')
+const { promisify } = require('util')
+const writeFile = promisify(fs.writeFile);
+
 let User = require('./models/user.model')
 let Policy = require('./models//policy.model')
 let Incident = require('./models//incident.model')
@@ -30,14 +35,16 @@ module.exports = () => {
 
         // Authentication
         User.findOne({ username: body.username })
-            .select('username password')
+            .select('username password firstName lastName middleName')
             .exec((err, data) => {
                 if (err) {
                     res.json(returnError(JSON.stringify(err)))
+                    return
                 }
 
                 if (!data) {
                     res.json(returnError('Invalid Username'))
+                    return
                 }
 
                 try {
@@ -47,11 +54,14 @@ module.exports = () => {
                             success: true,
                             data: data
                         })
+                        return
                     } else {
                         res.json(returnError('Invalid Password'))
+                        return
                     }
                 } catch (err) {
                     res.json(returnError(JSON.stringify(err)))
+                    return
                 }
             })
     }
@@ -86,17 +96,43 @@ module.exports = () => {
     async function createIncident(req, res) {
 
         let policyId = req.params.policyid
-        let otherpartiesBody = req.body.otherparties
+        let otherBody = req.body.others
+        let imagesBody = req.body.images
         let incidentBody = req.body.incident
+        let otherArray = []
+        let imagesArray = []
 
-        let otherPartyModel = await new Other(otherpartiesBody).save();
-        // let otherId = mongoose.Types.ObjectId(otherPartyModel._id)
 
-        incidentBody.otherParty.push(otherPartyModel._id)
+        // Saving Other Parties
 
-        let incidentModel = await new Incident(incidentBody).save();
-        let policyModel = await Policy.findById(policyId);
+        for (let i = 0; i < otherBody.length; i++) {
+            try {
+                let otherPartyModel = await new Other(otherBody[i]).save()
+                otherArray.push(otherPartyModel._id)
+            } catch (err) {
+                console.log('Saving Other Parties: ' + err);
+            }
+        }
 
+        incidentBody.otherParty = otherArray
+
+        let incidentModel = await new Incident(incidentBody).save()
+
+        for (let i = 0; i < imagesBody.length; i++) {
+            let base64data = imagesBody[i].replace(/^data:.*,/, '')
+            let fname = incidentModel._id + '_' + i + '.png'
+
+            try {
+                await writeFile(userFiles + fname, base64data, 'base64')
+                imagesArray.push(fname)
+            } catch (error) {
+                console.log(error)
+            }
+
+        }
+
+        incidentModel.images = imagesArray
+        incidentModel.save();
 
         Policy.findOne({ _id: policyId })
             .select('incidents')
@@ -119,35 +155,6 @@ module.exports = () => {
                     })
                 }
             })
-
-        // policyModel.incidents.push(incidentModel._id)
-        // policyModel.incidents.concat([incidentModel._id])
-
-        // policyModel.save((err, data) => {
-        //     if (err) {
-        //         res.json(returnError(JSON.stringify(err)))
-        //     } else {
-        //         res.json({
-        //             message: 'Successful Saved',
-        //             success: true,
-        //             data: data
-        //         })
-        //     }
-        // });
-
-        // let policyId = req.params.policyid
-        // let incidentBody = req.body.incident
-        // let otherpartiesBody = req.body.otherparties
-
-        // let incidentModel = await new Incident(incidentBody).save();
-        // let otherPartyModel = await new Incident(otherpartiesBody).save();
-        // let policyModel = await Policy.findById(policyId);
-
-        // console.log('incidentModel', incidentModel)
-        // console.log('otherPartyModel', otherPartyModel)
-        // console.log('policyModel', policyModel)
-
-        // res.json(incidentModel)
 
     }
 
@@ -198,6 +205,12 @@ module.exports = () => {
     }
 
     // ********************************************************************** //
+}
+
+function saveFile(base64data, fname) {
+    fs.writeFile(userFiles + fname, base64data, 'base64', (err) => {
+        return err;
+    });
 }
 
 
