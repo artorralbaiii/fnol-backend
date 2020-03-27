@@ -76,7 +76,7 @@ module.exports = () => {
         let id = mongoose.Types.ObjectId(_id)
 
         Policy.findById(id)
-            .populate('incidents', '-images')
+            .populate('incidents')
             .exec((err, data) => {
                 if (err) {
                     res.json(returnError(JSON.stringify(err)))
