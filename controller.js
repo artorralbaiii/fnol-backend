@@ -4,9 +4,10 @@ const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile);
 
 let User = require('./models/user.model')
-let Policy = require('./models//policy.model')
-let Incident = require('./models//incident.model')
-let Other = require('./models//otherparty.model')
+let Policy = require('./models/policy.model')
+let LinkPolicy = require('./models/policylink.model')
+let Incident = require('./models/incident.model')
+let Other = require('./models/otherparty.model')
 let mongoose = require('mongoose')
 
 let returnError = (message) => {
@@ -20,6 +21,7 @@ module.exports = () => {
         login: login,
         getIncident: getIncident,
         getPolicy: getPolicy,
+        fetchThirdPartyData: fetchThirdPartyData,
         getUserData: getUserData,
         ping: ping
     }
@@ -69,14 +71,18 @@ module.exports = () => {
 
     // ********************************************************************** //
 
-
     function getPolicy(req, res) {
 
         let _id = req.params.policyid
         let id = mongoose.Types.ObjectId(_id)
 
         Policy.findById(id)
-            .populate('incidents')
+            .populate({
+                path: 'incidents',
+                populate: {
+                    path: 'otherParty'
+                }
+            })
             .exec((err, data) => {
                 if (err) {
                     res.json(returnError(JSON.stringify(err)))
@@ -90,6 +96,97 @@ module.exports = () => {
             })
 
     }
+
+    function fetchThirdPartyData(req, res) {
+        // :initiator/:initiator_policy/:link_policy_num
+        let initiator = req.params.initiator
+        let initiatorId = mongoose.Types.ObjectId(initiator)
+        let initiatorPolicy = req.params.initiator_policy
+        let initiatorPolicyId = mongoose.Types.ObjectId(initiatorPolicy)
+        let policynum = req.params.link_policy_num
+
+        Policy.findOne({ policyNumber: policynum })
+            .populate('owner')
+            .populate({
+                path: 'incidents',
+                populate: {
+                    path: 'otherParty'
+                }
+            })
+            .exec((err, policyData) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+
+                    if (policyData) {
+
+                        LinkPolicy.findOne({
+                            $or: [
+                                {
+                                    $and: [{ authorPolicy: policyData._id }, { linkedPolicy: initiatorPolicyId }]
+                                },
+                                {
+                                    $and: [{ authorPolicy: initiatorPolicyId }, { linkedPolicy: policyData._id }]
+                                }
+                            ]
+                        }, (err, linkData) => {
+                            if (err) {
+                                res.json(returnError(JSON.stringify(err)))
+                            } else {
+                                if (linkData) {
+                                    if (linkData.statusCode === 1) {
+                                        res.json({
+                                            message: 'Linked Data Successfully Fetched',
+                                            success: true,
+                                            data: policyData,
+                                            linkStatus: linkData.statusCode
+                                        })
+                                    } else {
+                                        res.json({
+                                            message: linkData.status,
+                                            success: true,
+                                            data: null,
+                                            linkStatus: linkData.statusCode
+                                        })
+                                    }
+
+                                } else {
+                                    let policyLink = new LinkPolicy({
+                                        author: initiatorId,
+                                        authorPolicy: initiatorPolicyId,
+                                        linkedPolicy: policyData._id
+                                    });
+
+                                    policyLink.save((err, data) => {
+                                        if (err) {
+                                            res.json(returnError(JSON.stringify(err)))
+                                        } else {
+                                            res.json({
+                                                message: 'Link Data Is Initiated',
+                                                success: true,
+                                                data: null,
+                                                linkStatus: 0
+                                            })
+                                        }
+                                    })
+
+                                }
+                            }
+                        });
+
+                    } else {
+                        res.json({
+                            message: 'Policy Not Found',
+                            success: false,
+                            data: null
+                        })
+                    }
+
+                }
+            })
+
+    }
+
 
     // ********************************************************************** //
 
@@ -206,11 +303,3 @@ module.exports = () => {
 
     // ********************************************************************** //
 }
-
-function saveFile(base64data, fname) {
-    fs.writeFile(userFiles + fname, base64data, 'base64', (err) => {
-        return err;
-    });
-}
-
-

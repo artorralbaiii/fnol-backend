@@ -8,6 +8,7 @@ module.exports = (app, express) => {
     api.get('/ping', database.ping)
 
     // GET 
+    api.get('/policy/link/:initiator/:initiator_policy/:link_policy_num', database.fetchThirdPartyData)
     api.get('/policy/:policyid', database.getPolicy)
     api.get('/user/:userid', database.getUserData)
     api.get('/incident/:incidentid', database.getIncident)

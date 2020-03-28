@@ -13,6 +13,7 @@ var userSchema = new schema({
     landLine: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
+    license: { type: String, required: true },
     policies: [{ type: schema.Types.ObjectId, ref: 'Policy' }]
 }, { timestamps: true });
 
