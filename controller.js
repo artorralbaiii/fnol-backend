@@ -2,6 +2,9 @@ const userFiles = './user_upload/'
 const fs = require('fs')
 const { promisify } = require('util')
 const writeFile = promisify(fs.writeFile);
+const ACTION_APPROVED = 1
+const ACTION_REJECT = 2
+const ACTION_CANCEL = 3
 
 let User = require('./models/user.model')
 let Policy = require('./models/policy.model')
@@ -18,8 +21,10 @@ module.exports = () => {
 
     let ctrl = {
         createIncident: createIncident,
+        linkPolicyAction: linkPolicyAction,
         login: login,
         getIncident: getIncident,
+        getLinkedPolicy: getLinkedPolicy,
         getPolicy: getPolicy,
         fetchThirdPartyData: fetchThirdPartyData,
         getUserData: getUserData,
@@ -123,10 +128,10 @@ module.exports = () => {
                         LinkPolicy.findOne({
                             $or: [
                                 {
-                                    $and: [{ authorPolicy: policyData._id }, { linkedPolicy: initiatorPolicyId }]
+                                    $and: [{ authorPolicy: policyData._id }, { linkedPolicy: initiatorPolicyId },  {statusCode: {$ne: 3}},  {statusCode: {$ne: 2}} ]
                                 },
                                 {
-                                    $and: [{ authorPolicy: initiatorPolicyId }, { linkedPolicy: policyData._id }]
+                                    $and: [{ authorPolicy: initiatorPolicyId }, { linkedPolicy: policyData._id },  {statusCode: {$ne: 3}},  {statusCode: {$ne: 2}}]
                                 }
                             ]
                         }, (err, linkData) => {
@@ -255,6 +260,74 @@ module.exports = () => {
 
     }
 
+    // ********************************************************************** //
+
+    function getLinkedPolicy(req, res) {
+
+        // let user = req.params.userid
+        // let userid = mongoose.Types.ObjectId(user)
+        let policy = req.params.policyid
+        let policyId = mongoose.Types.ObjectId(policy)
+
+        LinkPolicy.find({
+            $or: [{ authorPolicy: policyId }, { linkedPolicy: policyId }]
+        })
+            .populate('author', 'firstName lastName')
+            .populate('authorPolicy', 'policyNumber')
+            .populate('linkedPolicy', 'policyNumber')
+            .exec((err, linkData) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: 'Successful Fetch',
+                        success: true,
+                        data: linkData
+                    })
+                }
+            })
+    }
+
+    // ********************************************************************** //
+
+    function linkPolicyAction(req, res) {
+        let link = req.params.linkid
+        let linkId = mongoose.Types.ObjectId(link)
+        let action = parseInt(req.body.action)
+
+        LinkPolicy.findById(linkId)
+            .populate('author', 'firstName lastName')
+            .populate('authorPolicy', 'policyNumber')
+            .populate('linkedPolicy', 'policyNumber')
+            .exec((err, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+
+                    if (action === ACTION_APPROVED) {
+                        data.status = 'Approved'
+                    } else if (action === ACTION_REJECT) {
+                        data.status = 'Rejected'
+                    } else if (action === ACTION_CANCEL) {
+                        data.status = 'Cancelled'
+                    }
+
+                    data.statusCode = action
+                    data.save((err, savedData) => {
+                        if (err) {
+                            res.json(returnError(JSON.stringify(err)))
+                        } else {
+                            res.json({
+                                message: 'Successful Fetch',
+                                success: true,
+                                data: savedData
+                            })
+                        }
+                    })
+                }
+            })
+
+    }
 
     // ********************************************************************** //
 

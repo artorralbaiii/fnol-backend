@@ -13,6 +13,8 @@ var otherPartySchema = new schema({
     driver: { type: String },
     license: { type: String },
     driverContact: { type: String },
+    fetchedStatus: { type: Number, default: 0 },
+    fetched: { type: Boolean, default: false },
 }, { timestamps: true }, { usePushEach: true });
 
 module.exports = mongoose.model('Other', otherPartySchema);
