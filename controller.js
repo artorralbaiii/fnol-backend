@@ -81,24 +81,38 @@ module.exports = () => {
         let _id = req.params.policyid
         let id = mongoose.Types.ObjectId(_id)
 
-        Policy.findById(id)
-            .populate({
-                path: 'incidents',
-                populate: {
-                    path: 'otherParty'
-                }
-            })
-            .exec((err, data) => {
-                if (err) {
-                    res.json(returnError(JSON.stringify(err)))
-                } else {
-                    res.json({
-                        message: 'Successful Fetch',
-                        success: true,
-                        data: data
-                    })
-                }
-            })
+        // Policy.findById(id)
+
+        // Policy.findOne({ _id: id })
+        //     .populate({
+        //         path: 'incidents',
+        //         populate: {
+        //             path: 'otherParty'
+        //         }
+        //     })
+        //     .exec((err, data) => {
+        //         if (err) {
+        //             res.json(returnError(JSON.stringify(err)))
+        //         } else {
+        //             res.json({
+        //                 message: 'Successful Fetch',
+        //                 success: true,
+        //                 data: data
+        //             })
+        //         }
+        //     })
+
+        Policy.findOne({ _id: id }, (err, data) => {
+            if (err) {
+                res.json(returnError(JSON.stringify(err)))
+            } else {
+                res.json({
+                    message: 'Successful Fetch',
+                    success: true,
+                    data: data
+                })
+            }
+        })
 
     }
 
@@ -128,10 +142,10 @@ module.exports = () => {
                         LinkPolicy.findOne({
                             $or: [
                                 {
-                                    $and: [{ authorPolicy: policyData._id }, { linkedPolicy: initiatorPolicyId },  {statusCode: {$ne: 3}},  {statusCode: {$ne: 2}} ]
+                                    $and: [{ authorPolicy: policyData._id }, { linkedPolicy: initiatorPolicyId }, { statusCode: { $ne: 3 } }, { statusCode: { $ne: 2 } }]
                                 },
                                 {
-                                    $and: [{ authorPolicy: initiatorPolicyId }, { linkedPolicy: policyData._id },  {statusCode: {$ne: 3}},  {statusCode: {$ne: 2}}]
+                                    $and: [{ authorPolicy: initiatorPolicyId }, { linkedPolicy: policyData._id }, { statusCode: { $ne: 3 } }, { statusCode: { $ne: 2 } }]
                                 }
                             ]
                         }, (err, linkData) => {
