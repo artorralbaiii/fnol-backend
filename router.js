@@ -21,6 +21,7 @@ module.exports = (app, express) => {
     api.post('/login', database.login)
     api.post('/policy/requestlink', database.requestLink)
     api.post('/policy/approveLink', database.approveLink)
+    api.post('/contract', database.createContract)
 
     return api
 }

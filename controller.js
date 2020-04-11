@@ -25,6 +25,7 @@ module.exports = () => {
     let ctrl = {
         approveLink: approveLink,
         createIncident: createIncident,
+        createContract: createContract,
         linkPolicyAction: linkPolicyAction,
         login: login,
         getIncident: getIncident,
@@ -460,5 +461,26 @@ module.exports = () => {
             })
     }
 
+    // ********************************************************************** //
+
+    function createContract(req, res) {
+        // /contracts
+        let payload = req.body
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts',
+            { json: payload },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: data.message,
+                        success: true,
+                        data: data.data
+                    })
+                }
+            })
+
+    }
     // ********************************************************************** //
 }
