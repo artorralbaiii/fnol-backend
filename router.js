@@ -20,6 +20,7 @@ module.exports = (app, express) => {
     api.post('/link/:linkid', database.linkPolicyAction)
     api.post('/login', database.login)
     api.post('/policy/requestlink', database.requestLink)
+    api.post('/policy/approveLink', database.approveLink)
 
     return api
 }

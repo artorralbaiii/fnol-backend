@@ -23,6 +23,7 @@ let returnError = (message) => {
 module.exports = () => {
 
     let ctrl = {
+        approveLink: approveLink,
         createIncident: createIncident,
         linkPolicyAction: linkPolicyAction,
         login: login,
@@ -407,7 +408,7 @@ module.exports = () => {
                     res.json({
                         message: 'Successful Fetch',
                         success: true,
-                        data: data
+                        data: data.data
                     })
                 }
             })
@@ -416,7 +417,7 @@ module.exports = () => {
 
     // ********************************************************************** //
 
-    function requestLink() {
+    function requestLink(req, res) {
         // otherPolicy, otherAddress, address
         let payload = req.body
 
@@ -427,15 +428,36 @@ module.exports = () => {
                     res.json(returnError(JSON.stringify(err)))
                 } else {
                     res.json({
-                        message: 'Successful Fetch',
+                        message: data.message,
                         success: true,
-                        data: data
+                        data: data.data
                     })
                 }
             })
 
 
 
+    }
+
+    // ********************************************************************** //
+
+    function approveLink(req, res) {
+        // myAddress and linkId
+        let payload = req.body
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts/approve_link',
+            { json: payload },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: data.message,
+                        success: true,
+                        data: data.data
+                    })
+                }
+            })
     }
 
     // ********************************************************************** //
