@@ -5,6 +5,8 @@ const writeFile = promisify(fs.writeFile);
 const ACTION_APPROVED = 1
 const ACTION_REJECT = 2
 const ACTION_CANCEL = 3
+const request = require('request')
+const config = require('./app.config')();
 
 let User = require('./models/user.model')
 let Policy = require('./models/policy.model')
@@ -12,6 +14,7 @@ let LinkPolicy = require('./models/policylink.model')
 let Incident = require('./models/incident.model')
 let Other = require('./models/otherparty.model')
 let mongoose = require('mongoose')
+
 
 let returnError = (message) => {
     return { message: message, success: false, data: null }
@@ -28,7 +31,9 @@ module.exports = () => {
         getPolicy: getPolicy,
         fetchThirdPartyData: fetchThirdPartyData,
         getUserData: getUserData,
-        ping: ping
+        ping: ping,
+        verifyPolicy: verifyPolicy,
+        requestLink: requestLink
     }
 
     return ctrl
@@ -385,6 +390,51 @@ module.exports = () => {
                     })
                 }
             })
+
+    }
+
+    // ********************************************************************** //
+
+    function verifyPolicy(req, res) {
+        let policy = req.params.policy
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts/verify_status',
+            { json: { policy: policy } },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: 'Successful Fetch',
+                        success: true,
+                        data: data
+                    })
+                }
+            })
+
+    }
+
+    // ********************************************************************** //
+
+    function requestLink() {
+        // otherPolicy, otherAddress, address
+        let payload = req.body
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts/request_link',
+            { json: payload },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: 'Successful Fetch',
+                        success: true,
+                        data: data
+                    })
+                }
+            })
+
+
 
     }
 
