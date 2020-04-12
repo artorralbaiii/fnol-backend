@@ -31,11 +31,14 @@ module.exports = () => {
         getIncident: getIncident,
         getLinkedPolicy: getLinkedPolicy,
         getPolicy: getPolicy,
+        getIncidentsByParty: getIncidentsByParty,
+        getIncidentByAddress: getIncidentByAddress,
         fetchThirdPartyData: fetchThirdPartyData,
         getUserData: getUserData,
         ping: ping,
         verifyPolicy: verifyPolicy,
-        requestLink: requestLink
+        requestLink: requestLink,
+        getLinkPolicy: getLinkPolicy
     }
 
     return ctrl
@@ -482,5 +485,67 @@ module.exports = () => {
             })
 
     }
+    // ********************************************************************** //
+
+    function getIncidentsByParty(req, res) {
+        let address = req.body.address
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts/incidents/party',
+            { json: { address: address } },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: data.message,
+                        success: true,
+                        data: data.data
+                    })
+                }
+            })
+    }
+
+    // ********************************************************************** //
+
+
+    function getIncidentByAddress(req, res) {
+        let address = req.body.address
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts/incident/address',
+            { json: { address: address } },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: data.message,
+                        success: true,
+                        data: data.data
+                    })
+                }
+            })
+    }
+
+    // ********************************************************************** //
+
+    function getLinkPolicy(req, res) {
+        let linkAddressRequestor = req.body.linkAddressRequestor
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts/linkpolicy',
+            { json: { linkAddressRequestor: linkAddressRequestor } },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: data.message,
+                        success: true,
+                        data: data.data
+                    })
+                }
+            })
+    }
+
+
     // ********************************************************************** //
 }
