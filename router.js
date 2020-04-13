@@ -22,6 +22,7 @@ module.exports = (app, express) => {
     api.post('/policy/requestlink', database.requestLink)
     api.post('/policy/approveLink', database.approveLink)
     api.post('/contract', database.createContract)
+    api.post('/contract/all', database.getAllContracts)
     api.post('/contract/address', database.getIncidentByAddress)
     api.post('/contract/party', database.getIncidentsByParty)
     api.post('/contracts/linkpolicy', database.getLinkPolicy)

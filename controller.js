@@ -28,6 +28,7 @@ module.exports = () => {
         createContract: createContract,
         linkPolicyAction: linkPolicyAction,
         login: login,
+        getAllContracts: getAllContracts,
         getIncident: getIncident,
         getLinkedPolicy: getLinkedPolicy,
         getPolicy: getPolicy,
@@ -546,6 +547,27 @@ module.exports = () => {
             })
     }
 
+
+    // ********************************************************************** //
+
+    function getAllContracts(req, res) {
+        let contractName = req.body.name
+        let address = req.body.address
+
+        request.post((process.env.C3_HOSTNAME || config.env.C3_HOSTNAME) + '/api/contracts/all',
+            { json: { name: contractName, address: address } },
+            (err, response, data) => {
+                if (err) {
+                    res.json(returnError(JSON.stringify(err)))
+                } else {
+                    res.json({
+                        message: data.message,
+                        success: true,
+                        data: data.data
+                    })
+                }
+            })
+    }
 
     // ********************************************************************** //
 }
