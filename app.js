@@ -38,7 +38,7 @@ let appEnv = cfenv.getAppEnv();
 //     // print a message when the server starts listening
 //     console.log("server starting on " + appEnv.url);
 // })
-app.listen(6003 || process.env.PORT || config.env.PORT, '0.0.0.0', () => {
+app.listen(config.env.PORT, '0.0.0.0', () => {
     // print a message when the server starts listening
-    console.log("server starting on " + appEnv.url);
+    console.log("server starting on " + config.env.PORT);
 })
