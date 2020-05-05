@@ -53,7 +53,6 @@ module.exports = () => {
 
         // Authentication
         User.findOne({ username: body.username })
-            .select('username password firstName lastName middleName')
             .exec((err, data) => {
                 if (err) {
                     res.json(returnError(JSON.stringify(err)))
